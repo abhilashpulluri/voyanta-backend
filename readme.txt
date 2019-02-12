@@ -21,5 +21,6 @@ Write a simple Rest API in the same module that will expose this feature, taking
 
 ######## I have created a sipmple REST api taking xml file as parameter and returning CSV file.
          I have used POSTMAN to test the API for uploading file and returning the csv file.
+         I also attached the POSTMAN test image in the mail.
          
           

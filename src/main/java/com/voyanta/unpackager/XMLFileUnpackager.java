@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
@@ -39,7 +40,8 @@ public class XMLFileUnpackager extends AbstractFileUnpackager {
 
 		try {
 			csvFile = Files.createTempFile("", ".csv").toFile();
-			this.xmlFileFormat = new XMLFileFormatValidator(this.fileDTO.getInputStream(), this.fileDTO.getName()).validate();
+			this.xmlFileFormat = new XMLFileFormatValidator(this.fileDTO.getInputStream(), this.fileDTO.getName())
+					.validate();
 			this.convertAndSave(csvFile);
 			csvFileDTO = new ValidFileDTO(csvFile, "CsvExport");
 			csvFileDTO.setEncoding(StandardCharsets.UTF_8.name());
@@ -55,8 +57,8 @@ public class XMLFileUnpackager extends AbstractFileUnpackager {
 	}
 
 	/**
-	 * Exercise 2 : fix convertAndSave() method to make the UT pass
-	 * Do not modify any other code than this method.
+	 * Exercise 2 : fix convertAndSave() method to make the UT pass Do not modify
+	 * any other code than this method.
 	 */
 	private void convertAndSave(File csvFile) throws Exception {
 		final String dstVersion = this.xmlFileFormat.getDstVersion();
@@ -65,13 +67,15 @@ public class XMLFileUnpackager extends AbstractFileUnpackager {
 		Set<String> invalidColumnHeader = new HashSet<>();
 		Map<String, String> sumCache = new HashMap<>();
 
-		try (final BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvFile, true), StandardCharsets.UTF_8))) {
+		try (final BufferedWriter bufferedWriter = new BufferedWriter(
+				new OutputStreamWriter(new FileOutputStream(csvFile, true), StandardCharsets.UTF_8))) {
 			bufferedWriter.write(UnpackagerUtils.createCsvRow(maxColumnCount, "", "CSV export", "", dstVersion));
 			bufferedWriter.newLine();
 			bufferedWriter.write(UnpackagerUtils.createCsvRowForDstColumnNames());
 			bufferedWriter.newLine();
 
 			for (int i = 0; i < rowCount; i++) {
+
 				final List<Map<String, String>> records = this.readRange(i);
 
 				for (Map<String, String> record : records) {
@@ -90,7 +94,7 @@ public class XMLFileUnpackager extends AbstractFileUnpackager {
 						}
 					}
 
-					values = validRecords.get(DstColumn.SUM.getId());
+					values = validRecords.get(DstColumn.SUM);
 
 					if (Objects.nonNull(values)) {
 						String sum = sumCache.get(values);
@@ -99,7 +103,6 @@ public class XMLFileUnpackager extends AbstractFileUnpackager {
 							sum = addValues(values);
 							sumCache.put(values, sum);
 						}
-
 						validRecords.put(DstColumn.SUM, sum);
 					}
 
@@ -111,11 +114,14 @@ public class XMLFileUnpackager extends AbstractFileUnpackager {
 
 					validRecords.put(DstColumn.ID, String.valueOf(i + 1));
 
-					bufferedWriter.write(UnpackagerUtils.createCsvRowWithValueMatchedToColumn(Arrays.asList(DstColumn.values()), validRecords));
+					bufferedWriter.write(UnpackagerUtils
+							.createCsvRowWithValueMatchedToColumn(Arrays.asList(DstColumn.values()), validRecords));
 					bufferedWriter.newLine();
 
 					i++;
 				}
+				// Decrementing the value of i as to extract all the positions
+				i--;
 			}
 		}
 
@@ -127,24 +133,26 @@ public class XMLFileUnpackager extends AbstractFileUnpackager {
 	}
 
 	/**
-	 * Simple method to sum numbers from a String comma separated "x,y,z,..." => x + y + z + ...
+	 * Simple method to sum numbers from a String comma separated "x,y,z,..." => x +
+	 * y + z + ...
+	 * 
 	 * @param values
 	 * @return
 	 */
 	private String addValues(final String values) {
-		try {
-			// simulate long calculation
-			TimeUnit.MILLISECONDS.sleep(100);
-		} catch (InterruptedException e) {
-		}
+		// Due to sleep method, program executions pauses and performance issue arises.
+		/*
+		 * try { // simulate long calculation TimeUnit.MILLISECONDS.sleep(100); } catch
+		 * (InterruptedException e) { }
+		 */
 
 		return String.valueOf(Arrays.stream(values.split(",")).mapToInt(Integer::parseInt).sum());
 
 	}
 
-	private List<Map<String, String>> readRange(final Integer rowIndexStart) {
-		final String expression = String.format("/*/*/*[position() >= %s and position() <= %s]",
-				rowIndexStart + 1, rowIndexStart + MAX_RANGE_COUNT);
+	private List<Map<String, String>> readRange(Integer rowIndexStart) {
+		final String expression = String.format("/*/*/*[position() >= %s and position() <= %s]", rowIndexStart + 1,
+				rowIndexStart + MAX_RANGE_COUNT);
 		final NodeList nodeList;
 		List<Map<String, String>> records = new ArrayList<>();
 

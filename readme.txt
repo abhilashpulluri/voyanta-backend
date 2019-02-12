@@ -13,6 +13,13 @@ ExerciseApplicationTests.compareGeneratedFiles() are passing.
 
 /!\ Do not modify any other code than this method!
 
+### I have fixed the bugs and performance issue, so that the tests can run
+
 2) Architecture
 
 Write a simple Rest API in the same module that will expose this feature, taking an xml file as parameter and returning the converted CSV file.
+
+######## I have created a sipmple REST api taking xml file as parameter and returning CSV file.
+         I have used POSTMAN to test the API for uploading file and returning the csv file.
+         
+          
